@@ -1,0 +1,39 @@
+# Build outputs
+bin/
+obj/
+[Bb]uild/
+[Dd]ebug*/
+[Rr]elease*/
+x64/
+x86/
+
+# MonoGame content pipeline artifacts
+Content/bin/
+Content/obj/
+**/*.mgcontent
+
+# IDE-specific
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.userprefs
+*.sln.docstates
+
+# VS Code (keep shareable project files)
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+# Logs and caches
+*.log
+*.cache
+*.tmp
+*.temp
+
+# OS-generated files
+.DS_Store
+Thumbs.db
