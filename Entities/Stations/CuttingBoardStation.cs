@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Snails.Core;
 using Snails.Entities.Items;
+using Snails.Systems;
 
 namespace Snails.Entities.Stations;
 
@@ -14,6 +15,15 @@ public class CuttingBoardStation : Station
     public override string Label => "Board";
 
     public CuttingBoardStation(Vector2 position) : base(position) { }
+
+    public override bool CanInteract(Item? heldItem)
+    {
+        // Pick up: something must be on the board
+        if (heldItem == null)
+            return HeldItem != null || _firstItem != null;
+        // Deposit: board must have room (empty or has first item awaiting second)
+        return HeldItem == null;
+    }
 
     public override void Interact(ref Item? playerItem)
     {
@@ -32,8 +42,7 @@ public class CuttingBoardStation : Station
             return;
         }
 
-        // Only accept valid board ingredients
-        if (playerItem is not (Rice or ChoppedSalmon or Nori))
+        if (playerItem == null)
             return;
 
         // Place first item on empty board
@@ -44,32 +53,34 @@ public class CuttingBoardStation : Station
             return;
         }
 
-        // Place second item — check for valid recipes
+        // Place second item — combine if valid recipe, otherwise swap
         if (_firstItem != null && HeldItem == null)
         {
-            Item? result = GetRecipeResult(_firstItem, playerItem);
-            if (result != null)
+            var recipe = RecipeManager.Instance.FindCombiningRecipe(
+                _firstItem.Type, playerItem.Type, "CuttingBoard");
+            if (recipe != null)
             {
                 _firstItem = null;
-                HeldItem = result;
+                HeldItem = Item.Create(recipe.Output);
                 playerItem = null;
             }
+            else
+            {
+                // No valid recipe — swap player's item with the stored one
+                var temp = _firstItem;
+                _firstItem = playerItem;
+                playerItem = temp;
+            }
+            return;
         }
-    }
 
-    private static Item? GetRecipeResult(Item first, Item second)
-    {
-        // Nigiri: Rice + ChoppedSalmon (any order)
-        if ((first is Rice && second is ChoppedSalmon) ||
-            (first is ChoppedSalmon && second is Rice))
-            return new Nigiri();
-
-        // Maki Roll: Rice + Nori (any order)
-        if ((first is Rice && second is Nori) ||
-            (first is Nori && second is Rice))
-            return new MakiRoll();
-
-        return null;
+        // Swap with completed result
+        if (HeldItem != null)
+        {
+            var temp = HeldItem;
+            HeldItem = playerItem;
+            playerItem = temp;
+        }
     }
 
     public override void Draw(SpriteBatch spriteBatch, TextureManager textures, SpriteFont font)

@@ -11,9 +11,10 @@ public class TofuStation : Station
 
     public TofuStation(Vector2 position) : base(position) { }
 
+    public override bool CanInteract(Item? heldItem) => heldItem == null;
+
     public override void Interact(ref Item? playerItem)
     {
-        if (playerItem == null)
-            playerItem = new Tofu();
+        TryGiveItem(ref playerItem, new Tofu());
     }
 }

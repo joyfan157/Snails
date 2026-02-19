@@ -18,7 +18,8 @@ public class HudRenderer
         _scoreManager = scoreManager;
     }
 
-    public void Draw(SpriteBatch spriteBatch, TextureManager textures, SpriteFont font, Player player)
+    public void Draw(SpriteBatch spriteBatch, TextureManager textures, SpriteFont font, Player player,
+        bool isRecording = false, float recordingTimer = 0f, int ghostCount = 0)
     {
         // Dark HUD bar background
         textures.DrawRect(spriteBatch,
@@ -30,8 +31,46 @@ public class HudRenderer
         spriteBatch.DrawString(font, scoreText, new Vector2(10, 10), Color.White);
 
         // Held item indicator
-        string heldText = player.HeldItem != null ? $"Holding: {player.HeldItem.DisplayName}" : "Hands empty";
-        spriteBatch.DrawString(font, heldText, new Vector2(10, 35), Color.LightGray);
+        string heldText = player.HeldItem != null ? $"Holding: {player.HeldItem.DisplayName}  [Q] Trash" : "Hands empty";
+        var heldColor = player.HeldItem != null ? Color.White : Color.LightGray;
+        spriteBatch.DrawString(font, heldText, new Vector2(10, 35), heldColor);
+
+        // Sprint / Stamina bar
+        string sprintLabel = player.StaminaDepleted ? "EXHAUSTED" : player.IsSprinting ? "SPRINTING" : "Sprint";
+        spriteBatch.DrawString(font, sprintLabel, new Vector2(10, 58),
+            player.StaminaDepleted ? Color.Red : player.IsSprinting ? Color.Orange : Color.LightGray);
+        float staminaProgress = player.Stamina / GameConstants.MaxStamina;
+        var staminaBarColor = player.StaminaDepleted ? Color.Red :
+            staminaProgress > 0.3f ? Color.Yellow : new Color(255, 140, 0);
+        var staminaBarRect = new Rectangle(10, 78, 140, 10);
+        textures.DrawProgressBar(spriteBatch, staminaBarRect, staminaProgress, staminaBarColor, new Color(40, 40, 40));
+        textures.DrawOutline(spriteBatch, staminaBarRect, Color.Gray, 1);
+
+        // Ghost recording info (right side of HUD)
+        if (isRecording)
+        {
+            float remaining = GameConstants.MaxRecordingSeconds - recordingTimer;
+            string recText = $"REC {remaining:F1}s";
+            var recSize = font.MeasureString(recText);
+            spriteBatch.DrawString(font, recText, new Vector2(GameConstants.WindowWidth - recSize.X - 10, 10), Color.Red);
+
+            var timerBarRect = new Rectangle(GameConstants.WindowWidth - 160, 32, 150, 8);
+            float progress = recordingTimer / GameConstants.MaxRecordingSeconds;
+            textures.DrawProgressBar(spriteBatch, timerBarRect, progress, Color.Red, new Color(40, 40, 40));
+        }
+        else
+        {
+            string hint = "SPACE: Record";
+            var hintSize = font.MeasureString(hint);
+            spriteBatch.DrawString(font, hint, new Vector2(GameConstants.WindowWidth - hintSize.X - 10, 10), Color.Gray);
+        }
+
+        if (ghostCount > 0)
+        {
+            string ghostText = $"Ghosts: {ghostCount}";
+            var ghostSize = font.MeasureString(ghostText);
+            spriteBatch.DrawString(font, ghostText, new Vector2(GameConstants.WindowWidth - ghostSize.X - 10, 48), Color.LightGreen);
+        }
 
         // Order boxes
         int orderX = 250;

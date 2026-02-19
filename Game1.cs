@@ -3,10 +3,13 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Snails.Core;
 using Snails.Entities;
+using Snails.Entities.Ghost;
 using Snails.Entities.Stations;
 using Snails.Systems;
 using Snails.UI;
+using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Snails;
 
@@ -19,9 +22,12 @@ public class Game1 : Game
 
     private Player _player;
     private List<Station> _stations;
+    private List<Obstacle> _obstacles;
     private OrderManager _orderManager;
     private ScoreManager _scoreManager;
     private HudRenderer _hud;
+    private GhostRecorder _recorder;
+    private List<GhostEntity> _ghosts;
 
     public Game1()
     {
@@ -46,38 +52,74 @@ public class Game1 : Game
         _textures = new TextureManager(GraphicsDevice);
         _font = Content.Load<SpriteFont>("DefaultFont");
 
+        RecipeManager.Initialize(Path.Combine(AppContext.BaseDirectory, "Data", "recipes.json"));
+
         _orderManager = new OrderManager();
         _scoreManager = new ScoreManager();
 
-        // Kitchen layout: ingredients left, processing center, assembly/output right
+        // Kitchen layout: spread across a large kitchen with multiple workstations
         _stations = new List<Station>
         {
-            // Left column — ingredient sources
+            // Ingredient sources — scattered along the left and bottom
             new RiceCookerStation(new Vector2(120, 220)),
-            new SalmonStation(new Vector2(120, 400)),
-            new NoriStation(new Vector2(280, 220)),
-            new TofuStation(new Vector2(280, 400)),
-            new DashiStation(new Vector2(280, 560)),
+            new SalmonStation(new Vector2(120, 440)),
+            new NoriStation(new Vector2(300, 220)),
+            new TofuStation(new Vector2(120, 660)),
+            new DashiStation(new Vector2(300, 760)),
 
-            // Center — processing
-            new ChoppingStation(new Vector2(480, 310)),
+            // Chopping stations — two in the center area
+            new ChoppingStation(new Vector2(500, 300)),
+            new ChoppingStation(new Vector2(500, 580)),
 
-            // Right column — assembly & output
-            new CuttingBoardStation(new Vector2(780, 220)),
-            new PotStation(new Vector2(780, 400)),
-            new OutputStation(new Vector2(780, 560), _orderManager, _scoreManager)
+            // Cutting boards — two on the right side
+            new CuttingBoardStation(new Vector2(820, 220)),
+            new CuttingBoardStation(new Vector2(1060, 440)),
+
+            // Pots — two spread apart
+            new PotStation(new Vector2(820, 580)),
+            new PotStation(new Vector2(1060, 720)),
+
+            // Output — serve window at far right
+            new OutputStation(new Vector2(1160, 220), _orderManager, _scoreManager)
         };
 
-        _player = new Player(new Vector2(480, 450));
+        _obstacles = new List<Obstacle>();
+
+        _player = new Player(new Vector2(600, 450));
         _hud = new HudRenderer(_orderManager, _scoreManager);
+
+        _recorder = new GhostRecorder();
+        _ghosts = new List<GhostEntity>();
+        _player.OnStationInteraction += _recorder.RecordInteraction;
     }
 
     protected override void Update(GameTime gameTime)
     {
-        if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+        var keyState = Keyboard.GetState();
+        if (keyState.IsKeyDown(Keys.Escape))
             Exit();
 
-        _player.Update(gameTime, _stations);
+        float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+        // Check recording toggle (Space key)
+        var completedRecording = _recorder.Update(keyState, _player);
+
+        _player.Update(gameTime, _stations, _obstacles);
+
+        // Capture frame after player update for accurate positions
+        _recorder.CaptureFrame(_player, dt);
+
+        // Spawn ghost from completed recording
+        if (completedRecording != null && completedRecording.Frames.Count > 0)
+        {
+            var color = GameConstants.GhostColors[_ghosts.Count % GameConstants.GhostColors.Length];
+            _ghosts.Add(new GhostEntity(completedRecording, color, _stations));
+        }
+
+        // Update all ghosts
+        foreach (var ghost in _ghosts)
+            ghost.Update(gameTime);
+
         foreach (var station in _stations)
             station.Update(gameTime);
         _orderManager.Update(gameTime);
@@ -95,6 +137,14 @@ public class Game1 : Game
         foreach (var station in _stations)
             station.Draw(_spriteBatch, _textures, _font);
 
+        // Draw obstacles
+        foreach (var obstacle in _obstacles)
+            obstacle.Draw(_spriteBatch, _textures, _font);
+
+        // Draw ghosts (before player so player renders on top)
+        foreach (var ghost in _ghosts)
+            ghost.Draw(_spriteBatch, _textures, _font);
+
         // Highlight hovered station within range
         var hovered = _player.GetHoveredStation(_stations);
         if (hovered != null)
@@ -104,7 +154,10 @@ public class Game1 : Game
         _player.Draw(_spriteBatch, _textures);
 
         // Draw HUD
-        _hud.Draw(_spriteBatch, _textures, _font, _player);
+        _hud.Draw(_spriteBatch, _textures, _font, _player,
+            _recorder.State == RecordingState.Recording,
+            _recorder.RecordingTimer,
+            _ghosts.Count);
 
         _spriteBatch.End();
 

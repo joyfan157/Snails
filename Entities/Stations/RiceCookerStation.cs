@@ -17,6 +17,12 @@ public class RiceCookerStation : Station
 
     public RiceCookerStation(Vector2 position) : base(position) { }
 
+    public override bool CanInteract(Item? heldItem)
+    {
+        if (heldItem != null) return false;
+        return _state == State.Idle || _state == State.Ready;
+    }
+
     public override void Interact(ref Item? playerItem)
     {
         switch (_state)
@@ -25,7 +31,7 @@ public class RiceCookerStation : Station
                 _state = State.Cooking;
                 _timer = GameConstants.RiceCookTime;
                 break;
-            case State.Ready:
+            case State.Ready when playerItem == null:
                 playerItem = new Rice();
                 _state = State.Idle;
                 break;

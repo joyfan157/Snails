@@ -11,9 +11,10 @@ public class SalmonStation : Station
 
     public SalmonStation(Vector2 position) : base(position) { }
 
+    public override bool CanInteract(Item? heldItem) => heldItem == null;
+
     public override void Interact(ref Item? playerItem)
     {
-        if (playerItem == null)
-            playerItem = new Salmon();
+        TryGiveItem(ref playerItem, new Salmon());
     }
 }

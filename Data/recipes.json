@@ -1,0 +1,25 @@
+{
+  "choppingRecipes": [
+    { "input": "Salmon", "output": "ChoppedSalmon", "cookTime": 2.0 },
+    { "input": "Tofu", "output": "ChoppedTofu", "cookTime": 2.0 }
+  ],
+  "combiningRecipes": [
+    {
+      "inputs": ["Rice", "ChoppedSalmon"],
+      "output": "Nigiri",
+      "station": "CuttingBoard"
+    },
+    {
+      "inputs": ["Rice", "Nori"],
+      "output": "MakiRoll",
+      "station": "CuttingBoard"
+    },
+    {
+      "inputs": ["ChoppedTofu", "Dashi"],
+      "output": "MisoSoup",
+      "station": "Pot",
+      "cookTime": 3.0
+    }
+  ],
+  "servableItems": ["Nigiri", "MakiRoll", "MisoSoup"]
+}

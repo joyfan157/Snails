@@ -20,16 +20,19 @@ public class OutputStation : Station
         _scoreManager = scoreManager;
     }
 
+    public override bool CanInteract(Item? heldItem)
+        => heldItem != null && heldItem.IsServable;
+
     public override void Interact(ref Item? playerItem)
     {
-        if (playerItem is Nigiri or MakiRoll or MisoSoup)
-        {
-            if (_orderManager.TryFulfillOrder(playerItem.Type))
-                _scoreManager.AddScore(Core.GameConstants.ScoreFulfilled);
-            else
-                _scoreManager.AddScore(Core.GameConstants.ScoreNoOrder);
+        if (playerItem == null || !playerItem.IsServable)
+            return;
 
-            playerItem = null;
-        }
+        if (_orderManager.TryFulfillOrder(playerItem.Type))
+            _scoreManager.AddScore(Core.GameConstants.ScoreFulfilled);
+        else
+            _scoreManager.AddScore(Core.GameConstants.ScoreNoOrder);
+
+        playerItem = null;
     }
 }

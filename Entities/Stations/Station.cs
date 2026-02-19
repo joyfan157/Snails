@@ -26,6 +26,23 @@ public abstract class Station
 
     public abstract void Interact(ref Item? playerItem);
 
+    /// <summary>
+    /// Returns true if an entity holding heldItem can meaningfully interact with this station.
+    /// Used by both player (to gate clicks) and ghosts (to decide whether to wait).
+    /// </summary>
+    public virtual bool CanInteract(Item? heldItem) => true;
+
+    /// <summary>
+    /// Helper for source stations: gives the item to the caller only if their hand is empty.
+    /// Returns true if the item was given.
+    /// </summary>
+    protected static bool TryGiveItem(ref Item? hand, Item item)
+    {
+        if (hand != null) return false;
+        hand = item;
+        return true;
+    }
+
     public virtual void Update(GameTime gameTime) { }
 
     public virtual void Draw(SpriteBatch spriteBatch, TextureManager textures, SpriteFont font)
