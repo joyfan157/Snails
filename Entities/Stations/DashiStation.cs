@@ -15,6 +15,6 @@ public class DashiStation : Station
 
     public override void Interact(ref Item? playerItem)
     {
-        TryGiveItem(ref playerItem, new Dashi());
+        TryGiveItem(ref playerItem, Item.Create(ItemType.Dashi)!);
     }
 }

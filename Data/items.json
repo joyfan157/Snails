@@ -1,0 +1,12 @@
+[
+  { "type": "Rice",          "name": "Rice",           "color": [255, 255, 255] },
+  { "type": "Salmon",        "name": "Salmon",         "color": [255, 150, 150] },
+  { "type": "ChoppedSalmon", "name": "Chopped Salmon", "color": [200, 80, 80] },
+  { "type": "Nigiri",        "name": "Nigiri",         "color": [255, 200, 150] },
+  { "type": "Nori",          "name": "Nori",           "color": [50, 80, 50] },
+  { "type": "Tofu",          "name": "Tofu",           "color": [245, 235, 200] },
+  { "type": "ChoppedTofu",   "name": "Chopped Tofu",   "color": [220, 210, 170] },
+  { "type": "Dashi",         "name": "Dashi",          "color": [180, 160, 120] },
+  { "type": "MakiRoll",      "name": "Maki Roll",      "color": [100, 180, 100] },
+  { "type": "MisoSoup",      "name": "Miso Soup",      "color": [200, 170, 80] }
+]

@@ -15,6 +15,6 @@ public class NoriStation : Station
 
     public override void Interact(ref Item? playerItem)
     {
-        TryGiveItem(ref playerItem, new Nori());
+        TryGiveItem(ref playerItem, Item.Create(ItemType.Nori)!);
     }
 }

@@ -32,7 +32,7 @@ public class RiceCookerStation : Station
                 _timer = GameConstants.RiceCookTime;
                 break;
             case State.Ready when playerItem == null:
-                playerItem = new Rice();
+                playerItem = Item.Create(ItemType.Rice);
                 _state = State.Idle;
                 break;
         }

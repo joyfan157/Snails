@@ -15,6 +15,6 @@ public class SalmonStation : Station
 
     public override void Interact(ref Item? playerItem)
     {
-        TryGiveItem(ref playerItem, new Salmon());
+        TryGiveItem(ref playerItem, Item.Create(ItemType.Salmon)!);
     }
 }

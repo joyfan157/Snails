@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using Snails.Core;
 using Snails.Entities;
 using Snails.Entities.Ghost;
+using Snails.Entities.Items;
 using Snails.Entities.Stations;
 using Snails.Systems;
 using Snails.UI;
@@ -52,7 +53,9 @@ public class Game1 : Game
         _textures = new TextureManager(GraphicsDevice);
         _font = Content.Load<SpriteFont>("DefaultFont");
 
-        RecipeManager.Initialize(Path.Combine(AppContext.BaseDirectory, "Data", "recipes.json"));
+        var dataDir = Path.Combine(AppContext.BaseDirectory, "Data");
+        Item.LoadDefinitions(Path.Combine(dataDir, "items.json"));
+        RecipeManager.Initialize(Path.Combine(dataDir, "recipes.json"));
 
         _orderManager = new OrderManager();
         _scoreManager = new ScoreManager();

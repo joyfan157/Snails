@@ -15,6 +15,6 @@ public class TofuStation : Station
 
     public override void Interact(ref Item? playerItem)
     {
-        TryGiveItem(ref playerItem, new Tofu());
+        TryGiveItem(ref playerItem, Item.Create(ItemType.Tofu)!);
     }
 }
