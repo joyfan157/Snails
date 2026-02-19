@@ -19,7 +19,7 @@ public class HudRenderer
     }
 
     public void Draw(SpriteBatch spriteBatch, TextureManager textures, SpriteFont font, Player player,
-        bool isRecording = false, float recordingTimer = 0f, int ghostCount = 0)
+        bool isRecording = false, float recordingTimer = 0f, int ghostCount = 0, string levelName = "")
     {
         // Dark HUD bar background
         textures.DrawRect(spriteBatch,
@@ -70,6 +70,16 @@ public class HudRenderer
             string ghostText = $"Ghosts: {ghostCount}";
             var ghostSize = font.MeasureString(ghostText);
             spriteBatch.DrawString(font, ghostText, new Vector2(GameConstants.WindowWidth - ghostSize.X - 10, 48), Color.LightGreen);
+        }
+
+        // Level indicator (bottom right of HUD)
+        if (!string.IsNullOrEmpty(levelName))
+        {
+            string levelText = $"Level: {levelName}  [TAB] Menu";
+            var levelSize = font.MeasureString(levelText);
+            spriteBatch.DrawString(font, levelText,
+                new Vector2(GameConstants.WindowWidth - levelSize.X - 10, GameConstants.HudHeight - 25),
+                new Color(150, 150, 200));
         }
 
         // Order boxes

@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Snails.Core;
+using Snails.Data;
 using Snails.Entities;
 using Snails.Entities.Ghost;
 using Snails.Entities.Items;
@@ -29,6 +30,10 @@ public class Game1 : Game
     private HudRenderer _hud;
     private GhostRecorder _recorder;
     private List<GhostEntity> _ghosts;
+    private LevelMenu _levelMenu;
+
+    private LevelData _currentLevel;
+    private int _currentLevelNumber = 1;
 
     public Game1()
     {
@@ -57,40 +62,45 @@ public class Game1 : Game
         Item.LoadDefinitions(Path.Combine(dataDir, "items.json"));
         RecipeManager.Initialize(Path.Combine(dataDir, "recipes.json"));
 
-        _orderManager = new OrderManager();
+        _levelMenu = new LevelMenu();
+        LoadLevel(_currentLevelNumber);
+    }
+
+    private void LoadLevel(int levelNumber)
+    {
+        // Load level data from JSON
+        _currentLevel = LevelLoader.LoadLevel(levelNumber);
+
+        // Initialize systems with level parameters
+        _orderManager = new OrderManager(
+            _currentLevel.AllowedDishes,
+            _currentLevel.OrderSpawnMin,
+            _currentLevel.OrderSpawnMax
+        );
         _scoreManager = new ScoreManager();
 
-        // Kitchen layout: spread across a large kitchen with multiple workstations
-        _stations = new List<Station>
+        // Create stations from level data
+        _stations = new List<Station>();
+        foreach (var stationData in _currentLevel.Stations)
         {
-            // Ingredient sources — scattered along the left and bottom
-            new RiceCookerStation(new Vector2(120, 220)),
-            new SalmonStation(new Vector2(120, 440)),
-            new NoriStation(new Vector2(300, 220)),
-            new TofuStation(new Vector2(120, 660)),
-            new DashiStation(new Vector2(300, 760)),
+            Vector2 position = new Vector2(stationData.X, stationData.Y);
+            Station station = StationFactory.CreateStation(
+                stationData.Type,
+                position,
+                _orderManager,
+                _scoreManager
+            );
+            _stations.Add(station);
+        }
 
-            // Chopping stations — two in the center area
-            new ChoppingStation(new Vector2(500, 300)),
-            new ChoppingStation(new Vector2(500, 580)),
-
-            // Cutting boards — two on the right side
-            new CuttingBoardStation(new Vector2(820, 220)),
-            new CuttingBoardStation(new Vector2(1060, 440)),
-
-            // Pots — two spread apart
-            new PotStation(new Vector2(820, 580)),
-            new PotStation(new Vector2(1060, 720)),
-
-            // Output — serve window at far right
-            new OutputStation(new Vector2(1160, 220), _orderManager, _scoreManager)
-        };
-
+        // Initialize obstacles (empty for now)
         _obstacles = new List<Obstacle>();
 
-        _player = new Player(new Vector2(600, 450));
+        // Create player at level-defined start position
+        _player = new Player(new Vector2(_currentLevel.PlayerStartX, _currentLevel.PlayerStartY));
         _hud = new HudRenderer(_orderManager, _scoreManager);
 
+        // Initialize ghost recording system
         _recorder = new GhostRecorder();
         _ghosts = new List<GhostEntity>();
         _player.OnStationInteraction += _recorder.RecordInteraction;
@@ -101,6 +111,22 @@ public class Game1 : Game
         var keyState = Keyboard.GetState();
         if (keyState.IsKeyDown(Keys.Escape))
             Exit();
+
+        // Update level menu and check for level selection
+        int? selectedLevel = _levelMenu.Update(keyState);
+        if (selectedLevel.HasValue && selectedLevel.Value != _currentLevelNumber)
+        {
+            _currentLevelNumber = selectedLevel.Value;
+            LoadLevel(_currentLevelNumber);
+            return; // Skip rest of update on level change
+        }
+
+        // Pause game when menu is open
+        if (_levelMenu.IsOpen)
+        {
+            base.Update(gameTime);
+            return;
+        }
 
         float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
@@ -160,7 +186,11 @@ public class Game1 : Game
         _hud.Draw(_spriteBatch, _textures, _font, _player,
             _recorder.State == RecordingState.Recording,
             _recorder.RecordingTimer,
-            _ghosts.Count);
+            _ghosts.Count,
+            _currentLevel.Name);
+
+        // Draw level menu on top of everything
+        _levelMenu.Draw(_spriteBatch, _textures, _font);
 
         _spriteBatch.End();
 

@@ -1,0 +1,37 @@
+{
+  "levelNumber": 2,
+  "name": "Nigiri Rush",
+  "scoreGoal": 1500,
+  "timeLimit": 240.0,
+  "playerStartX": 600.0,
+  "playerStartY": 400.0,
+  "stations": [
+    // Ingredient sources - doubled up for faster production
+    { "type": "RiceCooker", "x": 100, "y": 200 },
+    { "type": "RiceCooker", "x": 100, "y": 350 },
+    { "type": "RiceCooker", "x": 100, "y": 500 },
+
+    { "type": "Salmon", "x": 250, "y": 200 },
+    { "type": "Salmon", "x": 250, "y": 350 },
+    { "type": "Salmon", "x": 250, "y": 500 },
+
+    { "type": "Nori", "x": 400, "y": 200 },
+    { "type": "Nori", "x": 400, "y": 500 },
+
+    // Processing stations - three chopping stations for parallel work
+    { "type": "Chopping", "x": 550, "y": 200 },
+    { "type": "Chopping", "x": 550, "y": 350 },
+    { "type": "Chopping", "x": 550, "y": 500 },
+
+    // Assembly stations - three cutting boards for final assembly
+    { "type": "CuttingBoard", "x": 750, "y": 200 },
+    { "type": "CuttingBoard", "x": 750, "y": 350 },
+    { "type": "CuttingBoard", "x": 750, "y": 500 },
+
+    // Output - centered on right side
+    { "type": "Output", "x": 950, "y": 350 }
+  ],
+  "allowedDishes": ["Nigiri"],
+  "orderSpawnMin": 6.0,
+  "orderSpawnMax": 12.0
+}

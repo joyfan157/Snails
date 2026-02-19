@@ -1,0 +1,25 @@
+{
+  "levelNumber": 1,
+  "name": "Basic Kitchen",
+  "scoreGoal": 1000,
+  "timeLimit": 300.0,
+  "playerStartX": 600.0,
+  "playerStartY": 450.0,
+  "stations": [
+    { "type": "RiceCooker", "x": 120, "y": 220 },
+    { "type": "Salmon", "x": 120, "y": 440 },
+    { "type": "Nori", "x": 300, "y": 220 },
+    { "type": "Tofu", "x": 120, "y": 660 },
+    { "type": "Dashi", "x": 300, "y": 760 },
+    { "type": "Chopping", "x": 500, "y": 300 },
+    { "type": "Chopping", "x": 500, "y": 580 },
+    { "type": "CuttingBoard", "x": 820, "y": 220 },
+    { "type": "CuttingBoard", "x": 1060, "y": 440 },
+    { "type": "Pot", "x": 820, "y": 580 },
+    { "type": "Pot", "x": 1060, "y": 720 },
+    { "type": "Output", "x": 1160, "y": 220 }
+  ],
+  "allowedDishes": ["Nigiri", "MakiRoll", "MisoSoup"],
+  "orderSpawnMin": 8.0,
+  "orderSpawnMax": 15.0
+}

@@ -1,3 +1,4 @@
+#nullable enable
 using Microsoft.Xna.Framework;
 using Snails.Core;
 using Snails.Entities.Items;
@@ -16,11 +17,27 @@ public class OrderManager
     private int _totalSpawned;
     private readonly Random _random = new();
 
-    private static readonly ItemType[] DishTypes = { ItemType.Nigiri, ItemType.MakiRoll, ItemType.MisoSoup };
+    private ItemType[] _allowedDishes;
+    private float _spawnIntervalMin;
+    private float _spawnIntervalMax;
 
-    public OrderManager()
+    public OrderManager(List<string>? allowedDishes = null, float? spawnMin = null, float? spawnMax = null)
     {
-        _spawnInterval = GameConstants.OrderSpawnIntervalMax;
+        // Convert dish names to ItemType enum
+        if (allowedDishes != null && allowedDishes.Count > 0)
+        {
+            _allowedDishes = allowedDishes
+                .Select(name => Enum.Parse<ItemType>(name))
+                .ToArray();
+        }
+        else
+        {
+            _allowedDishes = new[] { ItemType.Nigiri, ItemType.MakiRoll, ItemType.MisoSoup };
+        }
+
+        _spawnIntervalMin = spawnMin ?? GameConstants.OrderSpawnIntervalMin;
+        _spawnIntervalMax = spawnMax ?? GameConstants.OrderSpawnIntervalMax;
+        _spawnInterval = _spawnIntervalMax;
         _spawnTimer = 5f; // first order comes after 5s
     }
 
@@ -31,14 +48,14 @@ public class OrderManager
         _spawnTimer -= dt;
         if (_spawnTimer <= 0 && ActiveOrders.Count < GameConstants.MaxActiveOrders)
         {
-            var dish = DishTypes[_random.Next(DishTypes.Length)];
+            var dish = _allowedDishes[_random.Next(_allowedDishes.Length)];
             ActiveOrders.Add(new Order(dish, GameConstants.OrderTimeLimit));
             _totalSpawned++;
 
             // Gradually decrease spawn interval
             _spawnInterval = MathHelper.Max(
-                GameConstants.OrderSpawnIntervalMin,
-                GameConstants.OrderSpawnIntervalMax - _totalSpawned * 0.5f);
+                _spawnIntervalMin,
+                _spawnIntervalMax - _totalSpawned * 0.5f);
             _spawnTimer = _spawnInterval;
         }
 
